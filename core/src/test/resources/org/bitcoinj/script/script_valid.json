@@ -521,5 +521,10 @@
 "P2SH,STRICTENC",
 "Basic PUSHDATA1 signedness check"],
 
-["0x00", "SIZE 0 EQUAL", "P2SH,STRICTENC", "Basic OP_0 execution"]
+["0x00", "SIZE 0 EQUAL", "P2SH,STRICTENC", "Basic OP_0 execution"],
+
+ ["'a' 'b'", "CAT 'ab' EQUAL", "P2SH,STRICTENC", "CAT re-enabled"],
+ ["'a' 'b' 0", "IF CAT 1 ELSE 1 ENDIF", "P2SH,STRICTENC", "CAT re-enabled"]
+
+
 ]

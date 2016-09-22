@@ -894,7 +894,7 @@ public class Script {
                 if (opcode == OP_VERIF || opcode == OP_VERNOTIF)
                     throw new ScriptException("Script included OP_VERIF or OP_VERNOTIF");
                 
-                if (opcode == OP_CAT || opcode == OP_SUBSTR || opcode == OP_LEFT || opcode == OP_RIGHT ||
+                if (opcode == OP_SUBSTR || opcode == OP_LEFT || opcode == OP_RIGHT ||
                     opcode == OP_INVERT || opcode == OP_AND || opcode == OP_OR || opcode == OP_XOR ||
                     opcode == OP_2MUL || opcode == OP_2DIV || opcode == OP_MUL || opcode == OP_DIV ||
                     opcode == OP_MOD || opcode == OP_LSHIFT || opcode == OP_RSHIFT)
@@ -1109,6 +1109,22 @@ public class Script {
                         stack.add(OPSWAPtmpChunk2);
                     break;
                 case OP_CAT:
+                    if (stack.size() < 2)
+                        throw new ScriptException("Attempted OP_CAT on a stack with size < 2");
+                    byte[] OPCATtmpChunk2 = stack.pollLast();
+                    byte[] OPCATtmpChunk1 = stack.pollLast();
+                    // Concatenate the two operands
+                    // TODO: Is MAX_SCRIPT_ELEMENT_SIZE the right upper-bound for a stack operand?
+                    // TODO: Add unit tests for size exceeded
+                    if (OPCATtmpChunk1.length + OPCATtmpChunk2.length > MAX_SCRIPT_ELEMENT_SIZE) {
+                        throw new ScriptException("OP_CAT would exceed max stack operand size");
+                    }
+                    byte[] OPCATresult = new byte[OPCATtmpChunk1.length + OPCATtmpChunk2.length];
+                    System.arraycopy(OPCATtmpChunk1, 0, OPCATresult, 0, OPCATtmpChunk1.length);
+                    System.arraycopy(OPCATtmpChunk2, 0, OPCATresult, OPCATtmpChunk1.length, OPCATtmpChunk2.length);
+                    //Push result
+                    stack.add(OPCATresult);
+                    break;
                 case OP_SUBSTR:
                 case OP_LEFT:
                 case OP_RIGHT:
