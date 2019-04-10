@@ -14,7 +14,7 @@ module wallettemplate {
         requires javafx.controls;
         requires javafx.fxml;
 
-        requires org.slf4j;
+        requires slf4j.api;
 
         requires org.bitcoinj.core;     // Automatic module
 
