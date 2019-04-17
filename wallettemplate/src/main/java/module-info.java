@@ -18,8 +18,14 @@ module wallettemplate {
 
         requires org.bitcoinj.core;     // Automatic module
 
+        requires org.bouncycastle.provider;
+        requires com.google.common;
+
+        requires protobuf.java;
         requires core;                  // ZXing Filename-based automatic module name
         requires fontawesomefx;         // Filename-based automatic module name
+        requires jsr305;
+        requires easybind;
 
         opens wallettemplate to javafx.fxml;
         opens wallettemplate.controls to javafx.fxml;
