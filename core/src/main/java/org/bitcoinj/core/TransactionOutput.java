@@ -55,8 +55,6 @@ public class TransactionOutput extends ChildMessage {
     private boolean availableForSpending;
     @Nullable private TransactionInput spentBy;
 
-    private int scriptLen;
-
     /**
      * Deserializes a transaction output message. This is usually part of a transaction message.
      */
@@ -139,7 +137,7 @@ public class TransactionOutput extends ChildMessage {
     @Override
     protected void parse() throws ProtocolException {
         value = readInt64();
-        scriptLen = (int) readVarInt();
+        int scriptLen = (int) readVarInt();
         length = cursor - offset + scriptLen;
         scriptBytes = readBytes(scriptLen);
     }
@@ -158,11 +156,7 @@ public class TransactionOutput extends ChildMessage {
      * receives.
      */
     public Coin getValue() {
-        try {
-            return Coin.valueOf(value);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+        return Coin.valueOf(value);
     }
 
     /**
