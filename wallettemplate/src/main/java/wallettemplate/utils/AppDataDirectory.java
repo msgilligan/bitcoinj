@@ -16,6 +16,8 @@
 
 package wallettemplate.utils;
 
+import org.bitcoinj.core.Utils;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,11 +48,11 @@ public class AppDataDirectory {
     private static Path getPath(String appName) {
         final Path applicationDataDirectory;
 
-        if (OSDetector.isWindows()) {
+        if (Utils.isWindows()) {
             applicationDataDirectory = Path.of(System.getenv("APPDATA"), appName);
-        } else if (OSDetector.isMac()) {
+        } else if (Utils.isMac()) {
             applicationDataDirectory = Path.of(System.getProperty("user.home"),"Library/Application Support", appName);
-        } else if (OSDetector.isUnix()) {
+        } else if (Utils.isLinux()) {
             applicationDataDirectory = Path.of(System.getProperty("user.home"), "." + appName);
         } else {
             // Unknown, assume unix-like
