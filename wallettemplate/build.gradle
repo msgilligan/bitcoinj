@@ -3,7 +3,7 @@ plugins {
     id 'eclipse'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.0.7'
-    id 'org.beryx.jlink' version '2.9.4'
+    id 'org.beryx.jlink' version '2.10.2'
 }
 
 dependencies {
@@ -25,14 +25,12 @@ compileJava.options.encoding = 'UTF-8'
 compileTestJava.options.encoding = 'UTF-8'
 
 mainClassName = "$moduleName/wallettemplate.Main"
-// appName variable workaround for https://github.com/beryx/badass-jlink-plugin/issues/48
-def appName = 'WalletTemplate'
 
 jlink {
     addExtraDependencies("javafx")
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
     launcher {
-        name = appName
+        name = 'WalletTemplate'
         jvmArgs = []
     }
     mergedModule {
@@ -46,8 +44,6 @@ jlink {
         // See https://badass-jlink-plugin.beryx.org/releases/latest/#_jpackage for
         // where the plugin's jpackage task finds the path to the jpackage tool by default
         // (Currently you need to manually install a OpenJDK 13 Early Access Build of jpackage)
-        imageName = appName
-        installerName = appName
         skipInstaller = false
     }
 }
