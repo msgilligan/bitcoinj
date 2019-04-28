@@ -16,7 +16,12 @@
 
 package wallettemplate;
 
+import com.blockchaincommons.airgap.UnsignedTxQrGenerator;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import org.bitcoinj.core.*;
 import org.bitcoinj.wallet.SendRequest;
 import org.bitcoinj.wallet.Wallet;
@@ -31,6 +36,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import org.bouncycastle.crypto.params.KeyParameter;
 import wallettemplate.controls.BitcoinAddressValidator;
+import wallettemplate.controls.ClickableBitcoinAddress;
+import wallettemplate.utils.QRCodeImages;
 import wallettemplate.utils.TextFieldValidator;
 import wallettemplate.utils.WTUtils;
 
@@ -42,6 +49,7 @@ import javax.annotation.Nullable;
 public class SendMoneyController {
     public Button sendBtn;
     public Button cancelBtn;
+    public Button signBtn;
     public TextField address;
     public Label titleLabel;
     public TextField amountEdit;
@@ -52,11 +60,13 @@ public class SendMoneyController {
     private Wallet.SendResult sendResult;
     private KeyParameter aesKey;
 
+    private UnsignedTxQrGenerator qrJsonGenerator = new UnsignedTxQrGenerator();
+
     // Called by FXMLLoader
     public void initialize() {
         Coin balance = Main.bitcoin.wallet().getBalance();
         checkState(!balance.isZero());
-        new BitcoinAddressValidator(Main.params, address, sendBtn);
+        new BitcoinAddressValidator(Main.params, address, sendBtn, signBtn);
         new TextFieldValidator(amountEdit, text ->
                 !WTUtils.didThrow(() -> checkState(Coin.parseCoin(text).compareTo(balance) <= 0)));
         amountEdit.setText(balance.toPlainString());
@@ -67,17 +77,22 @@ public class SendMoneyController {
         overlayUI.done();
     }
 
+    public void sign(ActionEvent event) {
+        SendRequest req = createSendRequest();
+        try {
+            Main.bitcoin.wallet().completeTx(req);
+        } catch (InsufficientMoneyException e) {
+            informationalAlert("Could not empty the wallet",
+                    "You may have too little money left in the wallet to make a transaction.");
+            overlayUI.done();
+        }
+        displayUnsignedTxQR(req.tx);
+    }
+
     public void send(ActionEvent event) {
         // Address exception cannot happen as we validated it beforehand.
         try {
-            Coin amount = Coin.parseCoin(amountEdit.getText());
-            Address destination = Address.fromString(Main.params, address.getText());
-            SendRequest req;
-            if (amount.equals(Main.bitcoin.wallet().getBalance()))
-                req = SendRequest.emptyWallet(destination);
-            else
-                req = SendRequest.to(destination, amount);
-            req.aesKey = aesKey;
+            SendRequest req = createSendRequest();
             sendResult = Main.bitcoin.wallet().sendCoins(req);
             Futures.addCallback(sendResult.broadcastComplete, new FutureCallback<Transaction>() {
                 @Override
@@ -97,6 +112,7 @@ public class SendMoneyController {
                     updateTitleForBroadcast();
             });
             sendBtn.setDisable(true);
+            signBtn.setDisable(true);
             address.setDisable(true);
             ((HBox)amountEdit.getParent()).getChildren().remove(amountEdit);
             ((HBox)btcLabel.getParent()).getChildren().remove(btcLabel);
@@ -108,6 +124,33 @@ public class SendMoneyController {
         } catch (ECKey.KeyIsEncryptedException e) {
             askForPasswordAndRetry();
         }
+    }
+
+    private SendRequest createSendRequest() {
+        Coin amount = Coin.parseCoin(amountEdit.getText());
+        Address destination = Address.fromString(Main.params, address.getText());
+        SendRequest req;
+        if (amount.equals(Main.bitcoin.wallet().getBalance()))
+            req = SendRequest.emptyWallet(destination);
+        else
+            req = SendRequest.to(destination, amount);
+        req.aesKey = aesKey;
+        return req;
+    }
+
+
+    private void displayUnsignedTxQR(Transaction tx) {
+        String qrJson = qrJsonGenerator.txToSigningReqJson(tx);
+        Image qrImage = QRCodeImages.imageFromString(qrJson, 600, 450);
+        ImageView view = new ImageView(qrImage);
+        view.setEffect(new DropShadow());
+        // Embed the image in a pane to ensure the drop-shadow interacts with the fade nicely, otherwise it looks weird.
+        // Then fix the width/height to stop it expanding to fill the parent, which would result in the image being
+        // non-centered on the screen. Finally fade/blur it in.
+        Pane pane = new Pane(view);
+        pane.setMaxSize(qrImage.getWidth(), qrImage.getHeight());
+        final Main.OverlayUI<SendMoneyController> overlay = Main.instance.overlayUI(pane, this);
+        view.setOnMouseClicked(event1 -> overlay.done());
     }
 
     private void askForPasswordAndRetry() {

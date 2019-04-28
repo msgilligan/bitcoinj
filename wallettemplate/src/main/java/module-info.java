@@ -17,6 +17,7 @@ module wallettemplate {
         requires slf4j.api;
 
         requires org.bitcoinj.core;     // Automatic module
+        requires com.blockchaincommons.airgap;
 
         requires org.bouncycastle.provider;
         requires com.google.common;

@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+    id 'java-library'
+    id 'maven'
+    id 'eclipse'
+    id 'org.javamodularity.moduleplugin' version "1.5.0"
+}
+
+sourceCompatibility = 11
+
+def jacksonVersion = '2.9.8'
+
+dependencies {
+    implementation project(':bitcoinj-core')
+    
+    implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+
+    implementation 'org.slf4j:slf4j-api:1.7.25'
+}

@@ -21,6 +21,9 @@ project(':tools').name = 'bitcoinj-tools'
 include 'examples'
 project(':examples').name = 'bitcoinj-examples'
 
+include 'airgaplib'
+
+
 if (GradleVersion.current().compareTo(minFxGradleVersion) >= 0 && JavaVersion.current().isJava11Compatible()) {
     System.err.println "Including wallettemplate because ${GradleVersion.current()} and Java ${JavaVersion.current()}"
     include 'wallettemplate'
