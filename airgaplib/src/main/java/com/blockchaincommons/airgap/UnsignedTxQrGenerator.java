@@ -10,11 +10,14 @@ import com.blockchaincommons.airgap.json.UnsignedTransaction;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bitcoinj.core.Address;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionInput;
 import org.bitcoinj.core.TransactionOutput;
+import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.params.TestNet3Params;
+import org.bitcoinj.wallet.Wallet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,13 +32,15 @@ public class UnsignedTxQrGenerator {
     private static final Logger log = LoggerFactory.getLogger(UnsignedTxQrGenerator.class);
     private static NetworkParameters netParams = TestNet3Params.get();
     private final ObjectMapper mapper;
+    private final Wallet wallet;
 
-    public UnsignedTxQrGenerator() {
+    public UnsignedTxQrGenerator(Wallet wallet) {
+        this.wallet = wallet;
         mapper = new ObjectMapper();
     }
 
 
-    public static TransactionSigningRequest of(Transaction transaction) {
+    public TransactionSigningRequest of(Transaction transaction) {
         TransactionSigningRequest txSignRequest;
         Header header = new Header("AirgappedSigning", 1L);
 
@@ -55,12 +60,16 @@ public class UnsignedTxQrGenerator {
         return txSignRequest;
     }
 
-    private static Input inputFromTxInput(TransactionInput txInput) {
-        Derivation derivation = new Derivation(0L, 0L);
+    private Input inputFromTxInput(TransactionInput txInput) {
+        Address inputAddress = txInput.getConnectedOutput().getScriptPubKey().getToAddress(netParams);
+        DeterministicKey key = (DeterministicKey) wallet.findKeyFromAddress(inputAddress);
+        log.info("Input {} has path {}",txInput.getIndex(), key.getPathAsString());
+        Derivation derivation = new Derivation((long) key.getPath().get(0).num(),
+                (long) key.getPath().get(1).num());
         return new Input(randomUid(),
                         txInput.getParentTransaction().getTxId().toString(),
                         (long) txInput.getIndex(),
-                        txInput.getConnectedOutput().getScriptPubKey().getToAddress(netParams).toString(),
+                        inputAddress.toString(),
                         derivation,
                         txInput.getValue().value);
     }

@@ -60,7 +60,7 @@ public class SendMoneyController {
     private Wallet.SendResult sendResult;
     private KeyParameter aesKey;
 
-    private UnsignedTxQrGenerator qrJsonGenerator = new UnsignedTxQrGenerator();
+    private UnsignedTxQrGenerator qrJsonGenerator = new UnsignedTxQrGenerator(Main.bitcoin.wallet());
 
     // Called by FXMLLoader
     public void initialize() {

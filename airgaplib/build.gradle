@@ -7,12 +7,15 @@ plugins {
 }
 
 sourceCompatibility = 11
+targetCompatibility = 11
 
 def jacksonVersion = '2.9.8'
 
 dependencies {
     implementation project(':bitcoinj-core')
-    
+
+    implementation 'com.google.guava:guava:27.1-android'
+
     implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
 

@@ -16,10 +16,12 @@
 
 package wallettemplate;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.*;
 import javafx.scene.input.*;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Utils;
+import org.bitcoinj.crypto.ChildNumber;
 import org.bitcoinj.kits.WalletAppKit;
 import org.bitcoinj.params.*;
 import org.bitcoinj.script.Script;
@@ -52,6 +54,12 @@ public class Main extends Application {
     public static final String APP_NAME = "WalletTemplate";
     private static final String WALLET_FILE_NAME = APP_NAME.replaceAll("[^a-zA-Z0-9.-]", "_") + "-"
             + params.getPaymentProtocolId();
+
+    private static final ImmutableList BIP44_ACCOUNT_PATH = ImmutableList.of(
+            new ChildNumber(44, true),
+            new ChildNumber(0, true),
+            new ChildNumber(0, false),
+            new ChildNumber(0, false));
 
     public static WalletAppKit bitcoin;
     public static Main instance;

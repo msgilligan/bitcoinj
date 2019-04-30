@@ -9,6 +9,7 @@ plugins {
 dependencies {
     implementation project(':bitcoinj-core')
     implementation project(':airgaplib')
+    implementation project(':airgapfx')
 
     implementation 'com.google.guava:guava:27.1-android'
     implementation 'de.jensd:fontawesomefx:8.0.0'
