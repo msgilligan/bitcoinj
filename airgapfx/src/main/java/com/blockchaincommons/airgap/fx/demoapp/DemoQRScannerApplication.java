@@ -17,13 +17,13 @@ import javafx.stage.Stage;
  */
 public class DemoQRScannerApplication extends Application {
 
-    private CameraService service ;
+    private CameraService cameraService;
 
     @Override
     public void init() {
         // note this is in init as it **must not** be called on the FX Application Thread:
         Webcam camera = Webcam.getWebcams().get(0);
-        service = new CameraService(camera);
+        cameraService = new CameraService(camera);
     }
 
     @Override
@@ -32,19 +32,19 @@ public class DemoQRScannerApplication extends Application {
         Button startStop = new Button();
         startStop.textProperty()
                 .bind(Bindings
-                        .when(service.runningProperty())
+                        .when(cameraService.runningProperty())
                         .then("Stop")
                         .otherwise("Start"));
 
         startStop.setOnAction(e -> {
-            if (service.isRunning()) {
-                service.cancel();
+            if (cameraService.isRunning()) {
+                cameraService.cancel();
             } else {
-                service.restart();
+                cameraService.restart();
             }
         });
 
-        CameraView view = new CameraView(service);
+        CameraView view = new CameraView(cameraService);
 
         BorderPane root = new BorderPane(view.getView());
         BorderPane.setAlignment(startStop, Pos.CENTER);
