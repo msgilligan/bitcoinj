@@ -8,6 +8,8 @@ module com.blockchaincommons.airgap.fx {
     requires javafx.fxml;
     requires javafx.swing;
 
+    requires com.google.zxing;
+    requires com.google.zxing.javase;
 
     requires webcam.capture;
     requires slf4j.api;

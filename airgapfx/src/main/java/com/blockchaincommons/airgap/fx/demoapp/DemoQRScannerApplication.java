@@ -11,11 +11,14 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  */
 public class DemoQRScannerApplication extends Application {
+    private static final Logger log = LoggerFactory.getLogger(DemoQRScannerApplication.class);
 
     private CameraService cameraService;
 
@@ -28,6 +31,8 @@ public class DemoQRScannerApplication extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+
+        cameraService.addQRListener(this::resultListener);
 
         Button startStop = new Button();
         startStop.textProperty()
@@ -56,7 +61,9 @@ public class DemoQRScannerApplication extends Application {
         primaryStage.show();
     }
 
-
+    void resultListener(String result) {
+        log.info("QR result: {}", result);
+    }
 
     public static void main(String[] args) {
         launch(args);
