@@ -32,16 +32,16 @@ public class CameraView {
                         case READY:
                             statusPlaceholder.setText("Initializing");
                             getChildren().setAll(statusPlaceholder);
-                            break ;
+                            break;
                         case SCHEDULED:
                             statusPlaceholder.setText("Waiting");
                             getChildren().setAll(statusPlaceholder);
-                            break ;
+                            break;
                         case RUNNING:
                             imageView.imageProperty().unbind();
                             imageView.imageProperty().bind(service.valueProperty());
                             getChildren().setAll(imageView);
-                            break ;
+                            break;
                         case CANCELLED:
                             System.out.println("Cancelled");
                             imageView.imageProperty().unbind();
@@ -49,13 +49,13 @@ public class CameraView {
                             statusPlaceholder.setText("Stopped");
                             getChildren().setAll(statusPlaceholder);
                             System.out.println("Processed cancel in view");
-                            break ;
+                            break;
                         case FAILED:
                             imageView.imageProperty().unbind();
                             statusPlaceholder.setText("Error");
                             getChildren().setAll(statusPlaceholder);
                             service.getException().printStackTrace();
-                            break ;
+                            break;
                         case SUCCEEDED:
                             // unreachable...
                             imageView.imageProperty().unbind();
