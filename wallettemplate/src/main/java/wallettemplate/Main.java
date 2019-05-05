@@ -16,7 +16,7 @@
 
 package wallettemplate;
 
-import com.google.common.collect.ImmutableList;
+import com.blockchaincommons.airgap.fx.camera.CameraService;
 import com.google.common.util.concurrent.*;
 import javafx.scene.input.*;
 import org.bitcoinj.core.NetworkParameters;
@@ -36,26 +36,34 @@ import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import wallettemplate.controls.NotificationBarPane;
 import wallettemplate.utils.AppDataDirectory;
 import wallettemplate.utils.GuiUtils;
 import wallettemplate.utils.TextFieldValidator;
 
+import com.github.sarxos.webcam.Webcam;
+
+
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 import static wallettemplate.utils.GuiUtils.*;
 
 public class Main extends Application {
+    private static final Logger log = LoggerFactory.getLogger(Main.class);
     public static NetworkParameters params = TestNet3Params.get();
     public static final Script.ScriptType PREFERRED_OUTPUT_SCRIPT_TYPE = Script.ScriptType.P2WPKH;
     public static final String APP_NAME = "WalletTemplate";
     private static final String WALLET_FILE_NAME = APP_NAME.replaceAll("[^a-zA-Z0-9.-]", "_") + "-"
             + params.getPaymentProtocolId();
 
-    private static final ImmutableList BIP44_ACCOUNT_PATH = ImmutableList.of(
+    private static final List BIP44_ACCOUNT_PATH = List.of(
             new ChildNumber(44, true),
             new ChildNumber(0, true),
             new ChildNumber(0, false),
@@ -64,11 +72,27 @@ public class Main extends Application {
     public static WalletAppKit bitcoin;
     public static Main instance;
 
+    public CameraService cameraService = null;
+    private static final int GET_WEBCAMS_TIMEOUT = 1000;   // Timeout in milliseconds
     private StackPane uiStack;
     private Pane mainUI;
     public MainController controller;
     public NotificationBarPane notificationBar;
     public Stage mainWindow;
+
+    @Override
+    public void init() {
+        // note this is in init as it **must not** be called on the FX Application Thread:
+        Webcam camera = null;
+        try {
+            camera = Webcam.getWebcams(GET_WEBCAMS_TIMEOUT).get(0);
+        } catch (TimeoutException toex) {
+            log.warn("No Webcam found within {} ms", GET_WEBCAMS_TIMEOUT);
+        }
+        if (camera != null) {
+            cameraService = new CameraService(camera);
+        }
+    }
 
     @Override
     public void start(Stage mainWindow) throws Exception {

@@ -18,18 +18,23 @@ module wallettemplate {
 
         requires org.bitcoinj.core;     // Automatic module
         requires com.blockchaincommons.airgap;
+        requires com.blockchaincommons.airgap.fx;
 
         requires org.bouncycastle.provider;
         requires com.google.common;
 
         requires protobuf.java;
-        requires core;                  // ZXing Filename-based automatic module name
+        requires com.google.zxing;                  // ZXing automatic module name
+        requires com.google.zxing.javase;
         requires fontawesomefx;         // Filename-based automatic module name
         requires jsr305;
+        requires webcam.capture;
 
         opens wallettemplate to javafx.fxml;
         opens wallettemplate.controls to javafx.fxml;
+        opens wallettemplate.utils to javafx.fxml;
         exports wallettemplate;
         exports wallettemplate.controls;
+        exports wallettemplate.utils;
 
 }

@@ -16,9 +16,16 @@
 
 package wallettemplate;
 
+import com.blockchaincommons.airgap.fx.camera.CameraService;
+import com.blockchaincommons.airgap.fx.components.CameraView;
 import javafx.beans.binding.Binding;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.layout.BorderPane;
+import javafx.stage.Stage;
 import org.bitcoinj.core.listeners.DownloadProgressTracker;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.utils.MonetaryFormat;
@@ -30,6 +37,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.util.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import wallettemplate.controls.ClickableBitcoinAddress;
 import wallettemplate.controls.NotificationBarPane;
 import wallettemplate.utils.BitcoinUIModel;
@@ -43,9 +52,13 @@ import static wallettemplate.Main.bitcoin;
  * after. This class handles all the updates and event handling for the main UI.
  */
 public class MainController {
+    private static final Logger log = LoggerFactory.getLogger(MainController.class);
+    
     public HBox controlsBox;
     public Label balance;
     public Button sendMoneyOutBtn;
+    public Button scanBtn;
+    
     public ClickableBitcoinAddress addressControl;
 
     private BitcoinUIModel model = new BitcoinUIModel();
@@ -63,6 +76,9 @@ public class MainController {
         balance.textProperty().bind(createBalanceStringBinding(model.balanceProperty()));
         // Don't let the user click send money when the wallet is empty.
         sendMoneyOutBtn.disableProperty().bind(model.balanceProperty().isEqualTo(Coin.ZERO));
+        // Don't let the user click the "scan QR" button if there is no camera
+        var cameraAvailable = Main.instance.cameraService != null;
+        scanBtn.setDisable(!cameraAvailable);
 
         showBitcoinSyncMessage();
         model.syncProgressProperty().addListener(x -> {
@@ -122,5 +138,38 @@ public class MainController {
 
     public DownloadProgressTracker progressBarUpdater() {
         return model.getDownloadProgressTracker();
+    }
+
+    public void scanClicked(ActionEvent actionEvent) {
+        log.info("scanClicked");
+        CameraService cameraService = Main.instance.cameraService;
+        //cameraService.addQRListener(this::resultListener);
+
+        Button startStop = new Button();
+        startStop.textProperty()
+                .bind(Bindings
+                        .when(cameraService.runningProperty())
+                        .then("Stop")
+                        .otherwise("Start"));
+
+        startStop.setOnAction(e -> {
+            if (cameraService.isRunning()) {
+                cameraService.cancel();
+            } else {
+                cameraService.restart();
+            }
+        });
+
+        CameraView view = new CameraView(cameraService);
+
+        BorderPane root = new BorderPane(view.getView());
+        BorderPane.setAlignment(startStop, Pos.CENTER);
+        BorderPane.setMargin(startStop, new Insets(5));
+        root.setBottom(startStop);
+
+        Scene scene = new Scene(root);
+        final Stage stage = new Stage();
+        stage.setScene(scene);
+        stage.show();
     }
 }

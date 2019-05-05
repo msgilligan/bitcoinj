@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  *

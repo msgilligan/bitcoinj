@@ -16,4 +16,6 @@ module com.blockchaincommons.airgap.fx {
 
     opens com.blockchaincommons.airgap.fx.demoapp to javafx.fxml;
     exports com.blockchaincommons.airgap.fx.demoapp;
+    exports com.blockchaincommons.airgap.fx.camera;
+    exports com.blockchaincommons.airgap.fx.components;
 }
