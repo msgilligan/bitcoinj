@@ -16,12 +16,8 @@
 
 package wallettemplate;
 
-import com.blockchaincommons.airgap.UnsignedTxQrGenerator;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import org.bitcoinj.core.*;
 import org.bitcoinj.wallet.SendRequest;
 import org.bitcoinj.wallet.Wallet;
@@ -36,8 +32,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import org.bouncycastle.crypto.params.KeyParameter;
 import wallettemplate.controls.BitcoinAddressValidator;
-import wallettemplate.controls.ClickableBitcoinAddress;
-import wallettemplate.utils.QRCodeImages;
 import wallettemplate.utils.TextFieldValidator;
 import wallettemplate.utils.WTUtils;
 
@@ -60,17 +54,37 @@ public class SendMoneyController {
     private Wallet.SendResult sendResult;
     private KeyParameter aesKey;
 
-    private UnsignedTxQrGenerator qrJsonGenerator = new UnsignedTxQrGenerator(Main.bitcoin.wallet());
+    private HardwareSigner hwSigner;
 
     // Called by FXMLLoader
     public void initialize() {
         Coin balance = Main.bitcoin.wallet().getBalance();
         checkState(!balance.isZero());
-        new BitcoinAddressValidator(Main.params, address, sendBtn, signBtn);
+        BitcoinAddressValidator addressValidator = new BitcoinAddressValidator(Main.params, address);
+        addressValidator.getObservableValidity().addListener(this::addressValidityChanged);
         new TextFieldValidator(amountEdit, text ->
                 !WTUtils.didThrow(() -> checkState(Coin.parseCoin(text).compareTo(balance) <= 0)));
         amountEdit.setText(balance.toPlainString());
         address.setPromptText(Address.fromKey(Main.params, new ECKey(), Main.PREFERRED_OUTPUT_SCRIPT_TYPE).toString());
+        initSigner();
+    }
+
+    public void setSigner(HardwareSigner hardwareSigner) {
+        this.hwSigner = hardwareSigner;
+        initSigner();
+    }
+
+    private void initSigner() {
+        if (hwSigner != null) {
+            signBtn.setText(hwSigner.getButtonText());
+        }
+    }
+
+    private void addressValidityChanged(ObservableValue<? extends Boolean> observable, Boolean oldVal, Boolean newVal) {
+        // Send is disabled if address is not valid
+        sendBtn.setDisable(!newVal);
+        // Sign is disabled if address is not valid OR there is no hwSigner
+        signBtn.setDisable(!newVal || hwSigner == null);
     }
 
     public void cancel(ActionEvent event) {
@@ -80,20 +94,21 @@ public class SendMoneyController {
     public void sign(ActionEvent event) {
         SendRequest req = createSendRequest();
         try {
+            req.signInputs = false;
             Main.bitcoin.wallet().completeTx(req);
         } catch (InsufficientMoneyException e) {
             informationalAlert("Could not empty the wallet",
                     "You may have too little money left in the wallet to make a transaction.");
             overlayUI.done();
         }
-        displayUnsignedTxQR(req.tx);
+        hwSigner.displaySigningOverlay(req.tx, this);
     }
 
     public void send(ActionEvent event) {
         // Address exception cannot happen as we validated it beforehand.
         try {
             SendRequest req = createSendRequest();
-            sendResult = Main.bitcoin.wallet().sendCoins(req);
+            sendResult = Main.bitcoin.wallet().sendCoins(req); // Sign and broadcast
             Futures.addCallback(sendResult.broadcastComplete, new FutureCallback<Transaction>() {
                 @Override
                 public void onSuccess(@Nullable Transaction result) {
@@ -139,20 +154,6 @@ public class SendMoneyController {
     }
 
 
-    private void displayUnsignedTxQR(Transaction tx) {
-        String qrJson = qrJsonGenerator.txToSigningReqJson(tx);
-        Image qrImage = QRCodeImages.imageFromString(qrJson, 600, 450);
-        ImageView view = new ImageView(qrImage);
-        view.setEffect(new DropShadow());
-        // Embed the image in a pane to ensure the drop-shadow interacts with the fade nicely, otherwise it looks weird.
-        // Then fix the width/height to stop it expanding to fill the parent, which would result in the image being
-        // non-centered on the screen. Finally fade/blur it in.
-        Pane pane = new Pane(view);
-        pane.setMaxSize(qrImage.getWidth(), qrImage.getHeight());
-        final Main.OverlayUI<SendMoneyController> overlay = Main.instance.overlayUI(pane, this);
-        view.setOnMouseClicked(event1 -> overlay.done());
-    }
-
     private void askForPasswordAndRetry() {
         Main.OverlayUI<WalletPasswordController> pwd = Main.instance.overlayUI("wallet_password.fxml");
         final String addressStr = address.getText();
@@ -173,4 +174,5 @@ public class SendMoneyController {
         final int peers = sendResult.tx.getConfidence().numBroadcastPeers();
         titleLabel.setText(String.format("Broadcasting ... seen by %d peers", peers));
     }
+
 }

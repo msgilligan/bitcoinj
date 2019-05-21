@@ -108,7 +108,8 @@ public class MainController {
 
     public void sendMoneyOut(ActionEvent event) {
         // Hide this UI and show the send money UI. This UI won't be clickable until the user dismisses send_money.
-        Main.instance.overlayUI("send_money.fxml");
+        Main.OverlayUI<SendMoneyController> screen = Main.instance.overlayUI("send_money.fxml");
+        screen.controller.setSigner(new AirGapSigner());
     }
 
     public void settingsClicked(ActionEvent event) {
