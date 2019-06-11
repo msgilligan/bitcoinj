@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package wallettemplate.utils;
+package org.bitcoinj.utils;
 
 import org.bitcoinj.core.Utils;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -49,15 +50,25 @@ public class AppDataDirectory {
         final Path applicationDataDirectory;
 
         if (Utils.isWindows()) {
-            applicationDataDirectory = Path.of(System.getenv("APPDATA"), appName);
+            applicationDataDirectory = pathOf(System.getenv("APPDATA"), appName);
         } else if (Utils.isMac()) {
-            applicationDataDirectory = Path.of(System.getProperty("user.home"),"Library/Application Support", appName);
+            applicationDataDirectory = pathOf(System.getProperty("user.home"),"Library/Application Support", appName);
         } else if (Utils.isLinux()) {
-            applicationDataDirectory = Path.of(System.getProperty("user.home"), "." + appName);
+            applicationDataDirectory = pathOf(System.getProperty("user.home"), "." + appName);
         } else {
             // Unknown, assume unix-like
-            applicationDataDirectory = Path.of(System.getProperty("user.home"), "." + appName);
+            applicationDataDirectory = pathOf(System.getProperty("user.home"), "." + appName);
         }
         return applicationDataDirectory;
+    }
+
+    /**
+     * Create a {@code Path} by joining path strings. Same functionality as Path.of() in JDK 11+
+     * @param first A base path string
+     * @param additional additional components to add
+     * @return the joined {@code Path}
+     */
+    private static Path pathOf(String first, String... additional) {
+        return FileSystems.getDefault().getPath(first, additional);
     }
 }
