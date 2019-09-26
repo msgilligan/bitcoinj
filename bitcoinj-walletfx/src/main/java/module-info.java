@@ -55,6 +55,7 @@ module org.bitcoinj.walletfx {
 
     /* Export/Open Wallet Framework packages */
     exports org.bitcoinj.walletfx;
+    exports org.bitcoinj.walletfx.cell;
     exports org.bitcoinj.walletfx.controls;
     exports org.bitcoinj.walletfx.utils;
     exports org.bitcoinj.walletfx.utils.easing;

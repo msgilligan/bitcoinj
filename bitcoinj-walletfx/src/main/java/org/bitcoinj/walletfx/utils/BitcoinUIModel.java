@@ -16,8 +16,11 @@
 
 package org.bitcoinj.walletfx.utils;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.listeners.DownloadProgressTracker;
 import org.bitcoinj.wallet.Wallet;
 import org.bitcoinj.wallet.listeners.CurrentKeyChangeEventListener;
@@ -27,6 +30,8 @@ import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 
@@ -34,10 +39,12 @@ import java.util.Date;
  * A class that exposes relevant bitcoin stuff as JavaFX bindable properties.
  */
 public class BitcoinUIModel {
+    private static final Logger log = LoggerFactory.getLogger(BitcoinUIModel.class);
     private SimpleObjectProperty<Address> address = new SimpleObjectProperty<>();
     private SimpleObjectProperty<Coin> balance = new SimpleObjectProperty<>(Coin.ZERO);
     private SimpleDoubleProperty syncProgress = new SimpleDoubleProperty(-1);
     private ProgressBarUpdater syncProgressUpdater = new ProgressBarUpdater();
+    private ObservableList<Transaction> transactionList = FXCollections.observableArrayList();
 
     public BitcoinUIModel() {
     }
@@ -65,10 +72,15 @@ public class BitcoinUIModel {
 
     private void updateBalance(Wallet wallet) {
         balance.set(wallet.getBalance());
+        getTransactionList().setAll(wallet.getTransactionsByTime());
     }
 
     private void updateAddress(Wallet wallet) {
         address.set(wallet.currentReceiveAddress());
+    }
+
+    public ObservableList<Transaction> getTransactionList() {
+        return transactionList;
     }
 
     private class ProgressBarUpdater extends DownloadProgressTracker {
