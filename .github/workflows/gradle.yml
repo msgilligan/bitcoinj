@@ -20,7 +20,7 @@ jobs:
       with:
         java-version: ${{ matrix.java }}
     - name: Build with Gradle
-      run: ./gradlew -Ddownload.jpackage=true build bitcoinj-walletfx-template:jpackage --stacktrace
+      run: ./gradlew -Ddownload.jpackage=true build bitcoinj-walletfx-template:jpackage --info --stacktrace
     - name: Upload jpackage directory as artifact
       uses: actions/upload-artifact@master
       with:
