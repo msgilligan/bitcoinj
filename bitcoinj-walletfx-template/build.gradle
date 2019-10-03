@@ -78,6 +78,9 @@ jlink {
             jpackageHome = downloadJPackage()
         }
         skipInstaller = false
+
+        imageOptions = ["--app-version", version]
+        installerOptions = ["--app-version", version]
     }
 }
 
