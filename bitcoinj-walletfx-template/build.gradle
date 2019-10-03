@@ -78,9 +78,15 @@ jlink {
             jpackageHome = downloadJPackage()
         }
         skipInstaller = false
+        def appVersionForJpackage = version
 
-        imageOptions = ["--app-version", version]
-        installerOptions = ["--app-version", version]
+        // rpmbuild doesn't like snapshot versions, temporary workaround
+        if (os.linux) {
+            appVersionForJpackage = '0.0.1'
+        }
+
+        imageOptions = ["--app-version", appVersionForJpackage]
+        installerOptions = ["--app-version", appVersionForJpackage]
     }
 }
 
