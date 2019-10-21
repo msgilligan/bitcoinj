@@ -46,8 +46,19 @@ public abstract class OverlayableWindowController {
     private Node stopClickPane = new Pane();
 
 
+    /**
+     * TODO: Explain how and why to implement this abstract method!
+     * @return an FxmlLoaderFactory
+     */
     abstract FxmlLoaderFactory getFxmlLoaderFactory();
 
+    /**
+     * Creates an OverlayUI from the given node and controller, blurs out the main UI and puts this one on top.
+     * @param node JavaFX Node with our UI component
+     * @param controller Controller for node
+     * @param <T> OverlayWindowController subclass being used
+     * @return the OverlayUI
+     */
     public <T extends OverlayWindowController> OverlayableWindowController.OverlayUI<T> overlayUI(Node node, T controller) {
         checkGuiThread();
         OverlayableWindowController.OverlayUI<T> pair = new OverlayableWindowController.OverlayUI<T>(this, node, controller);
@@ -58,22 +69,34 @@ public abstract class OverlayableWindowController {
         return pair;
     }
 
-    /** Loads the FXML file with the given name, blurs out the main UI and puts this one on top. */
+    /**
+     * Loads the FXML resource with the given name, blurs out the main UI and puts this one on top.
+     * @param name Name of .fxml resource to load
+     * @param <T> OverlayWindowController subclass being used
+     * @return the OverlayUI
+     */
     public <T extends OverlayWindowController> OverlayableWindowController.OverlayUI<T> overlayUI(String name) {
+        checkGuiThread();
+        // Load the UI from disk.
+        // Note that the location URL returned from getResource() will be in the package of the concrete subclass
+        URL location = OverlayableWindowController.class.getResource(name);
+        return this.overlayUI(location);
+    }
+
+    /**
+     * Loads the FXML file with the given location, blurs out the main UI and puts this one on top.
+     *
+     * @param location A location URL for a .fxml resource
+     * @param <T> OverlayWindowController subclass being used
+     * @return the OverlayUI
+     */
+    public <T extends OverlayWindowController> OverlayableWindowController.OverlayUI<T> overlayUI(URL location) {
+        checkGuiThread();
         try {
-            checkGuiThread();
-            // Load the UI from disk.
-            // Note that the location URL returned from getResource() will be in the package of the concrete subclass
-            URL location = OverlayableWindowController.class.getResource(name);
             FXMLLoader loader = getFxmlLoaderFactory().get(location);
             Pane ui = loader.load();
             T controller = loader.getController();
-            OverlayableWindowController.OverlayUI<T> pair = new OverlayableWindowController.OverlayUI<T>(this, ui, controller);
-            if (controller != null) {
-                controller.setOverlayUI(pair);
-            }
-            pair.show();
-            return pair;
+            return this.overlayUI(ui, controller);
         } catch (IOException e) {
             throw new RuntimeException(e);  // Should never happen.
         }
