@@ -51,14 +51,12 @@ import org.bitcoinj.core.AbstractBlockChain;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.AddressFormatException;
 import org.bitcoinj.core.Base58;
-import org.bitcoinj.core.Block;
 import org.bitcoinj.core.BlockChain;
 import org.bitcoinj.core.CheckpointManager;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.Context;
 import org.bitcoinj.core.DumpedPrivateKey;
 import org.bitcoinj.core.ECKey;
-import org.bitcoinj.core.FilteredBlock;
 import org.bitcoinj.core.FullPrunedBlockChain;
 import org.bitcoinj.core.InsufficientMoneyException;
 import org.bitcoinj.core.LegacyAddress;
@@ -71,7 +69,6 @@ import org.bitcoinj.core.StoredBlock;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.Utils;
 import org.bitcoinj.core.VerificationException;
-import org.bitcoinj.core.listeners.BlocksDownloadedEventListener;
 import org.bitcoinj.core.listeners.DownloadProgressTracker;
 import org.bitcoinj.wallet.MarriedKeyChain;
 import org.bitcoinj.wallet.Protos;
@@ -385,7 +382,7 @@ public class WalletTool {
                 } else if (options.has(outputFlag)) {
                     Coin feePerVkb = null;
                     if (options.has(feePerVkbOption))
-                        feePerVkb = parseCoin((String) options.valueOf(feePerVkbOption));
+                        feePerVkb = parseCoin(options.valueOf(feePerVkbOption));
                     if (options.has(feeSatPerVbyteOption))
                         feePerVkb = Coin.valueOf(Long.parseLong(options.valueOf(feeSatPerVbyteOption)) * 1000);
                     String lockTime = null;
