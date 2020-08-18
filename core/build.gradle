@@ -22,11 +22,20 @@ dependencies {
     testImplementation 'com.h2database:h2:1.3.167'
     testImplementation 'org.fusesource.leveldbjni:leveldbjni-all:1.8'
     testImplementation 'nl.jqno.equalsverifier:equalsverifier:2.5.2'
+    testRuntimeOnly "org.junit.vintage:junit-vintage-engine:5.6.2"
 }
 
 sourceCompatibility = 1.7
-compileJava.options.encoding = 'UTF-8'
-compileTestJava.options.encoding = 'UTF-8'
+
+compileJava {
+    options.encoding = 'UTF-8'
+}
+
+compileTestJava {
+    targetCompatibility = 1.8   // JUnit 5 requires JDK 8, but can test JDK 7 classes
+    options.encoding = 'UTF-8'
+}
+
 javadoc.options.encoding = 'UTF-8'
 
 protobuf {
@@ -37,6 +46,7 @@ protobuf {
 }
 
 test {
+    useJUnitPlatform()
     exclude 'org/bitcoinj/core/PeerTest*'
     exclude 'org/bitcoinj/core/TransactionBroadcastTest*'
     exclude 'org/bitcoinj/net/discovery/DnsDiscoveryTest*'
