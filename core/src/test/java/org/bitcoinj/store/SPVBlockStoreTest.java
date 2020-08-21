@@ -167,7 +167,7 @@ public class SPVBlockStoreTest {
 
     @Test
     public void oneStoreDelete() throws Exception {
-        // Used to fail on windows.
+        // Used to fail on windows. TODO: Fix on Windows
         SPVBlockStore store = new SPVBlockStore(UNITTEST, blockStoreFile);
         store.close();
         assertTrue(blockStoreFile.delete());
