@@ -34,7 +34,7 @@ public class AppDataDirectoryTest {
         final String appName = "bitcoinj";
         String path = AppDataDirectory.get(appName).toString();
         if (Utils.isWindows()) {
-            assertEquals("Path wrong on Mac", winPath(appName), path);
+            assertEquals("Path wrong on Windows", winPath(appName), path);
         } else if (Utils.isMac()) {
             assertEquals("Path wrong on Mac",  macPath(appName), path);
         } else if (Utils.isLinux()) {
@@ -49,7 +49,7 @@ public class AppDataDirectoryTest {
         final String appName = "Bitcoin";
         String path = AppDataDirectory.get(appName).toString();
         if (Utils.isWindows()) {
-            assertEquals("Path wrong on Mac", winPath(appName), path);
+            assertEquals("Path wrong on Windows", winPath(appName), path);
         } else if (Utils.isMac()) {
             assertEquals("Path wrong on Mac",  macPath(appName), path);
         } else if (Utils.isLinux()) {
@@ -64,7 +64,7 @@ public class AppDataDirectoryTest {
         // The null character is non printable and an ASCII control character
         // Forbidden on all OSs
         if (Utils.isWindows()) {
-            AppDataDirectory.get("/");
+            AppDataDirectory.get(":");  // TODO: Find a character that fails on Windows
         }
         if (Utils.isMac()) {
             // NUL character
@@ -78,7 +78,7 @@ public class AppDataDirectoryTest {
 
 
     private static String winPath(String appName) {
-        return WINAPPDATA + "\\." + appName.toLowerCase();
+        return WINAPPDATA + "\\" + appName.toLowerCase();
     }
 
     private static String macPath(String appName) {
