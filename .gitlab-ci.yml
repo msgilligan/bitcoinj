@@ -1,20 +1,24 @@
-image: ubuntu:bionic
+image: ubuntu:focal
 
 variables:
-  GRADLE_VERSION: "5.6.2"
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  UBUNTU_CODENAME: "focal"
+  JDK_PACKAGE: "adoptopenjdk-16-hotspot"
 
 before_script:
   - apt-get update
   - apt-get -y upgrade
-  - apt-get -y install openjdk-11-jdk gradle rpm fakeroot
-  - gradle wrapper --gradle-version=$GRADLE_VERSION --stacktrace
+  - DEBIAN_FRONTEND=noninteractive apt-get -y install wget apt-transport-https gnupg curl binutils rpm fakeroot gradle
+  - wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | apt-key add -
+  - echo "deb https://adoptopenjdk.jfrog.io/adoptopenjdk/deb $UBUNTU_CODENAME main" | tee /etc/apt/sources.list.d/adoptopenjdk.list
+  - apt-get update
+  - apt-get -y install $JDK_PACKAGE
 
 build:
   script:
     - java -version
-    - echo Gradle OPTS are $GRADLE_OPTS
-    - ./gradlew -Ddownload.jpackage=true build bitcoinj-walletfx-template:jpackage --stacktrace
+    - jpackage --version
+    - ./gradlew build bitcoinj-walletfx-template:jpackage --stacktrace
   artifacts:
     paths:
       - bitcoinj-walletfx-template/build/jpackage

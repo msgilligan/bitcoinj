@@ -31,7 +31,7 @@ module org.bitcoinj.walletfx {
     requires javafx.controls;
     requires javafx.fxml;
 
-    requires org.consensusj.supernautfx;
+    requires app.supernaut.fx;
     requires javax.inject;
     /*
      * Although the classes in a SupernautFX app (like this one, hopefully) use annotations
@@ -48,7 +48,7 @@ module org.bitcoinj.walletfx {
     requires org.bouncycastle.provider;
     requires com.google.common;
 
-    requires protobuf.java;
+    requires com.google.protobuf;
     requires com.google.zxing;
     requires fontawesomefx;         // Filename-based automatic module name
 

@@ -1,16 +1,15 @@
 plugins {
     id 'java'
-    id 'maven'
+    id 'maven-publish'
     id 'eclipse'
     id 'application'
-    id 'org.openjfx.javafxplugin'           version '0.0.8'
-    id 'org.beryx.jlink'                    version '2.16.0'
-    id 'org.javamodularity.moduleplugin'    version "1.5.0"
-    id "de.undercouch.download"             version "4.0.0"
+    id 'org.javamodularity.moduleplugin'    version "1.8.10"
+    id 'org.openjfx.javafxplugin'           version '0.0.10'
+    id 'org.beryx.jlink'                    version '2.24.2'
 }
 
 repositories {
-    maven { url 'https://dl.bintray.com/consensusj/maven' }
+    maven { url 'https://gitlab.com/api/v4/projects/26584840/packages/maven' }  // SupernautFX
 }
 
 dependencies {
@@ -19,17 +18,18 @@ dependencies {
     }
     implementation project(':bitcoinj-core')
 
-    implementation('org.consensusj.supernaut:supernautfx:0.0.4') {
+    implementation('app.supernaut:app.supernaut.fx:0.2.0') {
         exclude group: 'org.openjfx'
     }
-    implementation "io.micronaut:micronaut-inject-java:1.2.0"
+    implementation "app.supernaut:app.supernaut.fx.micronaut:0.2.0"
+    implementation "io.micronaut:micronaut-inject-java:2.5.13"
 
     implementation 'com.google.guava:guava:27.1-android'
     implementation 'de.jensd:fontawesomefx:8.0.0'
     implementation 'com.google.zxing:core:3.4.0'
 
-    implementation 'org.slf4j:slf4j-api:1.7.28'
-    implementation 'org.slf4j:slf4j-jdk14:1.7.28'
+    implementation 'org.slf4j:slf4j-api:2.0.0-alpha5'
+    runtimeOnly 'org.slf4j:slf4j-jdk14:2.0.0-alpha5'
 
     implementation "javax.inject:javax.inject:1"
 
@@ -39,7 +39,7 @@ dependencies {
 version = '0.16-SNAPSHOT'
 
 javafx {
-    version = 13
+    version = '17.0.0.1'
     modules = [ 'javafx.controls', 'javafx.graphics', 'javafx.fxml' ]
 }
 
@@ -51,7 +51,10 @@ sourceCompatibility = 11
 compileJava.options.encoding = 'UTF-8'
 compileTestJava.options.encoding = 'UTF-8'
 
-mainClassName = "$moduleName/wallettemplate.WalletTemplateApp"
+application {
+    mainModule = 'wallettemplate'
+    mainClass  = 'wallettemplate.WalletTemplateApp'
+}
 
 def appName = 'WalletTemplate'
 
@@ -59,79 +62,56 @@ ext.os = org.gradle.internal.os.OperatingSystem.current()
 
 jlink {
     addExtraDependencies("javafx")
-    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages', '--add-modules', 'app.supernaut.fx.micronaut,org.slf4j.jul']
     launcher {
         name = appName
         jvmArgs = []
     }
     mergedModule {
-        requires 'java.logging'
-        requires 'javafx.graphics'
-        requires 'javafx.controls'
-        
-        forceMerge 'org.slf4j'
+        additive = true
+
+        requires 'org.slf4j'
     }
     jpackage {
         // See https://badass-jlink-plugin.beryx.org/releases/latest/#_jpackage for
         // where the plugin's jpackage task finds the path to the jpackage tool by default
-        if (Boolean.getBoolean('download.jpackage')) {
-            jpackageHome = downloadJPackage()
-        }
         skipInstaller = false
-        def appVersionForJpackage = version
 
-        // rpmbuild doesn't like snapshot versions, temporary workaround
-        if (os.linux) {
-            appVersionForJpackage = '0.0.1'
-        }
+        // Massage version string to be compatible with jpackage installers
+        // for the current OS platform
+        def appVersionForJpackage = normalizeAppVersion(version)
 
-        imageOptions = ["--app-version", appVersionForJpackage]
+        imageOptions = ["--verbose", "--app-version", appVersionForJpackage]
         installerOptions = ["--app-version", appVersionForJpackage]
-    }
-}
 
-// #### The code below is needed only if you use the downloadJPackage() method to install the jpackage tool ####
-// Code copied from build.gradle in https://github.com/beryx/fxgl-sliding-puzzle/
-
-/** @return  [url, extension, directory] */
-String[] getJPackageCoordinates() {
-    def jpackageBaseUrl = 'https://s3-us-west-2.amazonaws.com/static.msgilligan.com/jpackage'
-    def jpackageVersionString = 'openjdk-14-jpackage%2B1-49'
-
-    if(os.macOsX) return [
-            "${jpackageBaseUrl}/${jpackageVersionString}_osx-x64_bin.tar.gz",
-            'tar.gz',
-            'jdk-14.jdk/Contents/Home'
-    ]
-    if(os.windows) return [
-            "${jpackageBaseUrl}/${jpackageVersionString}_windows-x64_bin.zip",
-            'zip',
-            'jdk-14'
-    ]
-    return [
-            "${jpackageBaseUrl}/${jpackageVersionString}_linux-x64_bin.tar.gz",
-            'tar.gz',
-            'jdk-14'
-    ]
-}
-
-String downloadJPackage() {
-    def (url, extension, directory) = getJPackageCoordinates()
-    def downloadDir = "$buildDir/download"
-    tasks.jpackageImage.doFirst {
-        def execExt = os.windows ? '.exe' : ''
-        if(!file("$downloadDir/$directory/bin/jpackage$execExt").file) {
-            def jdkArchivePath = "$downloadDir/jdk-jpackage.$extension"
-            download {
-                src url
-                dest jdkArchivePath
-                overwrite false
-            }
-            copy {
-                from ((extension == 'tar.gz') ? tarTree(resources.gzip(jdkArchivePath)) : zipTree(jdkArchivePath))
-                into downloadDir
-            }
+        if (os.macOsX) {
+            //imageOptions += [ '--resource-dir', "${projectDir}/src/macos/resource-dir" ]
+            imageOptions += [ '--mac-package-identifier', 'app.omnimarketcap' ]
+        } else if (os.windows) {
+            installerOptions += ['--win-dir-chooser', '--win-menu', '--win-shortcut']
         }
+
     }
-    return "$downloadDir/$directory"
+}
+
+/**
+ * Massage the version string based upon the current OS to be valid
+ * for the installer platforms for that OS. rpmbuild, MSI, and potentially
+ * others have restrictions on valid version strings.
+ *
+ * @param appVersion A typical Gradle version string
+ * @return a version string that should work for the current platform
+ */
+String normalizeAppVersion(final String appVersion) {
+    if (os.linux) {
+        // Replace '-' with '.' for rpmbuild
+        return appVersion.replace('-', '.')
+    } else if (os.windows) {
+        // This is a hack attempt to assure the version conforms to MSI productVersion string rules
+        // See https://docs.microsoft.com/en-us/windows/win32/msi/productversion
+        // For now, we'll just remove '-SNAPSHOT' if present.
+        return appVersion.replaceAll('-SNAPSHOT$', '')
+    } else {
+        return "1.0"
+    }
 }
