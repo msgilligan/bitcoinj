@@ -73,7 +73,6 @@ import org.bitcoinj.wallet.MarriedKeyChain;
 import org.bitcoinj.wallet.Protos;
 import org.bitcoinj.wallet.SendRequest;
 import org.bitcoinj.wallet.Wallet;
-import org.bitcoinj.wallet.WalletExtension;
 import org.bitcoinj.wallet.WalletProtobufSerializer;
 import org.bitcoinj.wallet.Wallet.BalanceType;
 import org.bitcoinj.wallet.listeners.WalletChangeEventListener;
@@ -339,7 +338,7 @@ public class WalletTool implements Callable<Integer> {
         SPV
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         int exitCode = new CommandLine(new WalletTool()).execute(args);
         System.exit(exitCode);
     }
@@ -421,7 +420,7 @@ public class WalletTool implements Callable<Integer> {
             if (ignoreMandatoryExtensions)
                 loader.setRequireMandatoryExtensions(false);
             walletInputStream = new BufferedInputStream(new FileInputStream(walletFile));
-            wallet = loader.readWallet(walletInputStream, forceReset, (WalletExtension[])(null));
+            wallet = loader.readWallet(walletInputStream, forceReset, null);
             if (!wallet.getParams().equals(params)) {
                 System.err.println("Wallet does not match requested network parameters: " +
                         wallet.getParams().getId() + " vs " + params.getId());
@@ -465,7 +464,7 @@ public class WalletTool implements Callable<Integer> {
                     }
                     CoinSelector coinSelector = null;
                     if (selectAddrStr != null) {
-                        Address selectAddr = null;
+                        Address selectAddr;
                         try {
                             selectAddr = Address.fromString(params, selectAddrStr);
                         } catch (AddressFormatException x) {
@@ -473,45 +472,39 @@ public class WalletTool implements Callable<Integer> {
                             return 1;
                         }
                         final Address validSelectAddr = selectAddr;
-                        coinSelector = new CoinSelector() {
-                            @Override
-                            public CoinSelection select(Coin target, List<TransactionOutput> candidates) {
-                                Coin valueGathered = Coin.ZERO;
-                                List<TransactionOutput> gathered = new LinkedList<TransactionOutput>();
-                                for (TransactionOutput candidate : candidates) {
-                                    try {
-                                        Address candidateAddr = candidate.getScriptPubKey().getToAddress(params);
-                                        if (validSelectAddr.equals(candidateAddr)) {
-                                            gathered.add(candidate);
-                                            valueGathered = valueGathered.add(candidate.getValue());
-                                        }
-                                    } catch (ScriptException x) {
-                                        // swallow
+                        coinSelector = (target, candidates) -> {
+                            Coin valueGathered = Coin.ZERO;
+                            List<TransactionOutput> gathered = new LinkedList<>();
+                            for (TransactionOutput candidate : candidates) {
+                                try {
+                                    Address candidateAddr = candidate.getScriptPubKey().getToAddress(params);
+                                    if (validSelectAddr.equals(candidateAddr)) {
+                                        gathered.add(candidate);
+                                        valueGathered = valueGathered.add(candidate.getValue());
                                     }
+                                } catch (ScriptException x) {
+                                    // swallow
                                 }
-                                return new CoinSelection(valueGathered, gathered);
                             }
+                            return new CoinSelection(valueGathered, gathered);
                         };
                     }
                     if (selectOutputStr != null) {
                         String[] parts = selectOutputStr.split(":", 2);
                         Sha256Hash selectTransactionHash = Sha256Hash.wrap(parts[0]);
                         int selectIndex = Integer.parseInt(parts[1]);
-                        coinSelector = new CoinSelector() {
-                            @Override
-                            public CoinSelection select(Coin target, List<TransactionOutput> candidates) {
-                                Coin valueGathered = Coin.ZERO;
-                                List<TransactionOutput> gathered = new LinkedList<TransactionOutput>();
-                                for (TransactionOutput candidate : candidates) {
-                                    int candicateIndex = candidate.getIndex();
-                                    final Sha256Hash candidateTransactionHash = candidate.getParentTransactionHash();
-                                    if (selectIndex == candicateIndex && selectTransactionHash.equals(candidateTransactionHash)) {
-                                        gathered.add(candidate);
-                                        valueGathered = valueGathered.add(candidate.getValue());
-                                    }
+                        coinSelector = (target, candidates) -> {
+                            Coin valueGathered = Coin.ZERO;
+                            List<TransactionOutput> gathered = new LinkedList<>();
+                            for (TransactionOutput candidate : candidates) {
+                                int candicateIndex = candidate.getIndex();
+                                final Sha256Hash candidateTransactionHash = candidate.getParentTransactionHash();
+                                if (selectIndex == candicateIndex && selectTransactionHash.equals(candidateTransactionHash)) {
+                                    gathered.add(candidate);
+                                    valueGathered = valueGathered.add(candidate.getValue());
                                 }
-                                return new CoinSelection(valueGathered, gathered);
                             }
+                            return new CoinSelection(valueGathered, gathered);
                         };
                     }
                     send(coinSelector, outputsStr, feePerVkb, lockTimeStr, allowUnconfirmed);
@@ -1219,7 +1212,7 @@ public class WalletTool implements Callable<Integer> {
             System.err.println("One of --pubkey or --addr must be specified.");
             return;
         }
-        ECKey key = null;
+        ECKey key;
         if (pubKeyStr != null) {
             key = wallet.findKeyFromPubKey(HEX.decode(pubKeyStr));
         } else {
@@ -1256,16 +1249,20 @@ public class WalletTool implements Callable<Integer> {
         if (dumpPrivKeys && wallet.isEncrypted()) {
             if (password != null) {
                 final KeyParameter aesKey = passwordToKey(true);
-                if (aesKey == null)
-                    return; // Error message already printed.
-                System.out.println(wallet.toString(dumpLookAhead, true, aesKey, true, true, chain));
+                if (aesKey != null) {
+                    printWallet(aesKey);
+                }
+                // If aesKey is null, error message should have already been printed
             } else {
                 System.err.println("Can't dump privkeys, wallet is encrypted.");
-                return;
             }
         } else {
-            System.out.println(wallet.toString(dumpLookAhead, dumpPrivKeys, null, true, true, chain));
+            printWallet(null);
         }
+    }
+
+    private void printWallet(@Nullable KeyParameter aesKey) {
+        System.out.println(wallet.toString(dumpLookAhead, dumpPrivKeys, aesKey, true, true, chain));
     }
 
     private void setCreationTime() {
