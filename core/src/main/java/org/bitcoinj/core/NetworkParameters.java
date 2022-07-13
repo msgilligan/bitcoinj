@@ -26,7 +26,6 @@ import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.params.RegTestParams;
 import org.bitcoinj.params.SigNetParams;
 import org.bitcoinj.params.TestNet3Params;
-import org.bitcoinj.params.UnitTestParams;
 import org.bitcoinj.protocols.payments.PaymentProtocol;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.store.BlockStore;
@@ -92,7 +91,7 @@ public abstract class NetworkParameters {
      * by looking at the port number.
      */
     protected String id;
-    protected BitcoinNetwork network;
+    protected final BitcoinNetwork network;
 
     /**
      * The depth of blocks required for a coinbase transaction to be spendable.
@@ -105,7 +104,8 @@ public abstract class NetworkParameters {
     protected Map<Integer, Sha256Hash> checkpoints = new HashMap<>();
     protected volatile transient MessageSerializer defaultSerializer = null;
 
-    protected NetworkParameters() {
+    protected NetworkParameters(BitcoinNetwork network) {
+        this.network = network;
     }
 
     public static final int TARGET_TIMESPAN = 14 * 24 * 60 * 60;  // 2 weeks per difficulty cycle, on average.

@@ -30,7 +30,6 @@ import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.crypto.KeyCrypter;
 import org.bitcoinj.crypto.KeyCrypterScrypt;
 import org.bitcoinj.crypto.LinuxSecureRandom;
-import org.bitcoinj.params.UnitTestParams;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.base.ScriptType;
 import org.bitcoinj.script.ScriptBuilder;
