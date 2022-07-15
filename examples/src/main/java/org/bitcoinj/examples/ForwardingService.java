@@ -33,6 +33,7 @@ import org.bitcoinj.wallet.SendRequest;
 import org.bitcoinj.wallet.Wallet;
 
 import java.io.File;
+import java.io.PrintStream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -43,6 +44,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ForwardingService {
     static final String usage = "Usage: address-to-send-back-to [mainnet|testnet|signet|regtest]";
     static final int requiredConfirmations = 1;
+    static final PrintStream out = System.out;
     private final BitcoinNetwork network;
     private final NetworkParameters params;
     private final Address forwardingAddress;
@@ -56,8 +58,8 @@ public class ForwardingService {
         // Parse the command line arguments
         CliArguments arguments = parseArguments(args);
 
-        System.out.println("Network: " + arguments.network.id());
-        System.out.println("Forwarding address: " + arguments.forwardingAddress);
+        out.println("Network: " + arguments.network.id());
+        out.println("Forwarding address: " + arguments.forwardingAddress);
 
         // Create the Service (and WalletKit)
         ForwardingService forwardingService = new ForwardingService(arguments.forwardingAddress, arguments.network);
@@ -113,8 +115,8 @@ public class ForwardingService {
             //
             // The transaction "tx" can either be pending, or included into a block (we didn't see the broadcast).
             Coin value = tx.getValueSentToMe(w);
-            System.out.println("Received tx for " + value.toFriendlyString() + ": " + tx);
-            System.out.println("Transaction will be forwarded after it confirms.");
+            out.println("Received tx for " + value.toFriendlyString() + ": " + tx);
+            out.println("Transaction will be forwarded after it confirms.");
             // Wait until it's made it into the block chain (may run immediately if it's already there).
             //
             // For this dummy app of course, we could just forward the unconfirmed transaction. If it were
@@ -124,7 +126,7 @@ public class ForwardingService {
 
             tx.getConfidence().getDepthFuture(requiredConfirmations).whenComplete((result, t) -> {
                 if (result != null) {
-                    System.out.println("Confirmation received.");
+                    out.println("Confirmation received.");
                     forwardCoins();
                 } else {
                     // This kind of future can't fail, just rethrow in case something weird happens.
@@ -134,8 +136,8 @@ public class ForwardingService {
         });
 
         Address sendToAddress = LegacyAddress.fromKey(params, kit.wallet().currentReceiveKey());
-        System.out.println("Send coins to: " + sendToAddress);
-        System.out.println("Waiting for coins to arrive. Press Ctrl-C to quit.");
+        out.println("Send coins to: " + sendToAddress);
+        out.println("Waiting for coins to arrive. Press Ctrl-C to quit.");
 
         try {
             Thread.sleep(Long.MAX_VALUE);
@@ -152,11 +154,11 @@ public class ForwardingService {
             SendRequest sendRequest = SendRequest.emptyWallet(forwardingAddress);
             Wallet.SendResult sendResult = kit.wallet().sendCoins(sendRequest);
             checkNotNull(sendResult);  // We should never try to send more coins than we have!
-            System.out.println("Sending ...");
+            out.println("Sending ...");
             // Register a callback that is invoked when the transaction has propagated across the network.
             sendResult.broadcastComplete.thenAccept(transaction -> {
                 // The wallet has changed now, it'll get auto saved shortly or when the app shuts down.
-                System.out.println("Sent coins onwards! Transaction hash is " + transaction.getTxId());
+                out.println("Sent coins onwards! Transaction hash is " + transaction.getTxId());
             });
         } catch (KeyCrypterException | InsufficientMoneyException e) {
             // We don't use encrypted wallets in this example - can never happen.
