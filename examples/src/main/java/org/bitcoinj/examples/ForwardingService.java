@@ -41,6 +41,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * sends them onwards to an address given on the command line.
  */
 public class ForwardingService {
+    static final String usage = "Usage: address-to-send-back-to [mainnet|testnet|signet|regtest]";
     static final int requiredConfirmations = 1;
     private final BitcoinNetwork network;
     private final NetworkParameters params;
@@ -52,23 +53,14 @@ public class ForwardingService {
         BriefLogFormatter.init();
         Context.propagate(new Context());
 
-        if (args.length < 1) {
-            System.err.println("Usage: address-to-send-back-to [mainnet|testnet|signet|regtest]");
-            return;
-        }
+        // Parse the command line arguments
+        CliArguments arguments = parseArguments(args);
 
-        // Figure out which network we should connect to. Each one gets its own set of files.
-        String networkArgument = (args.length > 1) ? args[1] : "main";
-        BitcoinNetwork network = BitcoinNetwork.fromString(networkArgument).orElseThrow();
-
-        // Parse the address given as the first parameter.
-        var address = Address.fromString(NetworkParameters.of(network), args[0]);
-
-        System.out.println("Network: " + network.id());
-        System.out.println("Forwarding address: " + address);
+        System.out.println("Network: " + arguments.network.id());
+        System.out.println("Forwarding address: " + arguments.forwardingAddress);
 
         // Create the Service (and WalletKit)
-        ForwardingService forwardingService = new ForwardingService(address, network);
+        ForwardingService forwardingService = new ForwardingService(arguments.forwardingAddress, arguments.network);
 
         // Start the Service (and WalletKit)
         forwardingService.start();
@@ -169,6 +161,31 @@ public class ForwardingService {
         } catch (KeyCrypterException | InsufficientMoneyException e) {
             // We don't use encrypted wallets in this example - can never happen.
             throw new RuntimeException(e);
+        }
+    }
+
+    static CliArguments parseArguments(String[] args) {
+        if (args.length < 1) {
+            System.err.println(usage);
+            throw new IllegalArgumentException("Address required");
+        }
+
+        // Figure out which network we should connect to. Each network gets its own set of files.
+        var networkString = (args.length > 1) ? args[1] : "mainnet";
+        var network = BitcoinNetwork.fromString(networkString).orElseThrow();
+        var forwardingAddress = Address.fromString(NetworkParameters.of(network), args[0]);
+
+        return new CliArguments(network, forwardingAddress);
+    }
+
+    // In JDK 16+ this should be a record
+    static class CliArguments {
+        final BitcoinNetwork network;
+        final Address forwardingAddress;
+
+        CliArguments(BitcoinNetwork network, Address forwardingAddress) {
+            this.network = network;
+            this.forwardingAddress = forwardingAddress;
         }
     }
 }
