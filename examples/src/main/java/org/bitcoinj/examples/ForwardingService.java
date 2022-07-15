@@ -127,7 +127,7 @@ public class ForwardingService {
             tx.getConfidence().getDepthFuture(requiredConfirmations).whenComplete((result, t) -> {
                 if (result != null) {
                     out.println("Confirmation received.");
-                    forwardCoins();
+                    forwardCoins(forwardingAddress);
                 } else {
                     // This kind of future can't fail, just rethrow in case something weird happens.
                     throw new RuntimeException(t);
@@ -148,7 +148,7 @@ public class ForwardingService {
         return String.format("forwarding-service-%s", network.toString());
     }
 
-    private void forwardCoins() {
+    private void forwardCoins(Address forwardingAddress) {
         try {
             // Now send the coins onwards.
             SendRequest sendRequest = SendRequest.emptyWallet(forwardingAddress);
