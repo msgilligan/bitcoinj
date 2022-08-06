@@ -30,14 +30,13 @@ public class DefaultAddressParser implements AddressParser {
 
     @Override
     public Address parseAddress(String addressString, BitcoinNetwork network) throws AddressFormatException {
-        NetworkParameters params = (network != null) ? NetworkParameters.of(network) : null;
         try {
-            return LegacyAddress.fromBase58(params, addressString);
+            return LegacyAddress.fromBase58(network, addressString);
         } catch (AddressFormatException.WrongNetwork x) {
             throw x;
         } catch (AddressFormatException x) {
             try {
-                return SegwitAddress.fromBech32(params, addressString);
+                return SegwitAddress.fromBech32(network, addressString);
             } catch (AddressFormatException.WrongNetwork x2) {
                 throw x;
             } catch (AddressFormatException x2) {

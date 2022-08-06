@@ -20,6 +20,7 @@ package org.bitcoinj.core;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.bitcoinj.base.BitcoinNetwork;
+import org.bitcoinj.base.Network;
 import org.bitcoinj.base.exceptions.AddressFormatException;
 import org.bitcoinj.base.utils.ByteUtils;
 import org.bitcoinj.params.MainNetParams;
@@ -196,7 +197,7 @@ public class LegacyAddressTest {
     @Test
     public void roundtripBase58() {
         String base58 = "17kzeh4N8g49GFvdDzSf8PjaPfyoD1MndL";
-        assertEquals(base58, LegacyAddress.fromBase58(null, base58).toBase58());
+        assertEquals(base58, LegacyAddress.fromBase58((Network) null, base58).toBase58());
     }
 
     @Test

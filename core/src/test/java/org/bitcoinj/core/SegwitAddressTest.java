@@ -19,6 +19,7 @@ package org.bitcoinj.core;
 import com.google.common.base.MoreObjects;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
+import org.bitcoinj.base.Network;
 import org.bitcoinj.base.exceptions.AddressFormatException;
 import org.bitcoinj.base.utils.ByteUtils;
 import org.bitcoinj.params.MainNetParams;
@@ -107,7 +108,7 @@ public class SegwitAddressTest {
     @Test
     public void validAddresses() {
         for (AddressData valid : VALID_ADDRESSES) {
-            SegwitAddress address = SegwitAddress.fromBech32(null, valid.address);
+            SegwitAddress address = SegwitAddress.fromBech32((Network) null, valid.address);
 
             assertEquals(valid.expectedParams, address.getParameters());
             assertEquals(valid.expectedScriptPubKey,
@@ -165,7 +166,7 @@ public class SegwitAddressTest {
     public void invalidAddresses() {
         for (String invalid : INVALID_ADDRESSES) {
             try {
-                SegwitAddress.fromBech32(null, invalid);
+                SegwitAddress.fromBech32((Network) null, invalid);
                 fail(invalid);
             } catch (AddressFormatException x) {
                 // expected
@@ -201,22 +202,22 @@ public class SegwitAddressTest {
 
     @Test(expected = AddressFormatException.InvalidDataLength.class)
     public void fromBech32_version0_invalidLength() {
-        SegwitAddress.fromBech32(null, "BC1QR508D6QEJXTDG4Y5R3ZARVARYV98GJ9P");
+        SegwitAddress.fromBech32((Network) null, "BC1QR508D6QEJXTDG4Y5R3ZARVARYV98GJ9P");
     }
 
     @Test(expected = AddressFormatException.InvalidDataLength.class)
     public void fromBech32_tooShort() {
-        SegwitAddress.fromBech32(null, "bc1rw5uspcuh");
+        SegwitAddress.fromBech32((Network) null, "bc1rw5uspcuh");
     }
 
     @Test(expected = AddressFormatException.InvalidDataLength.class)
     public void fromBech32_tooLong() {
-        SegwitAddress.fromBech32(null, "bc10w508d6qejxtdg4y5r3zarvary0c5xw7kw508d6qejxtdg4y5r3zarvary0c5xw7kw5rljs90");
+        SegwitAddress.fromBech32((Network) null, "bc10w508d6qejxtdg4y5r3zarvary0c5xw7kw508d6qejxtdg4y5r3zarvary0c5xw7kw5rljs90");
     }
 
     @Test(expected = AddressFormatException.InvalidPrefix.class)
     public void fromBech32_invalidHrp() {
-        SegwitAddress.fromBech32(null, "tc1qw508d6qejxtdg4y5r3zarvary0c5xw7kg3g4ty");
+        SegwitAddress.fromBech32((Network) null, "tc1qw508d6qejxtdg4y5r3zarvary0c5xw7kg3g4ty");
     }
 
     @Test(expected = AddressFormatException.WrongNetwork.class)
