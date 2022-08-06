@@ -54,7 +54,7 @@ public class SegwitAddressTest {
 
         SegwitAddress address = SegwitAddress.fromBech32(MAINNET, bech32);
 
-        assertEquals(MAINNET, address.params);
+        assertEquals(MAINNET, address.getParameters());
         assertEquals("0014751e76e8199196d454941c45d1b3a323f1433bd6",
                 ByteUtils.HEX.encode(ScriptBuilder.createOutputScript(address).getProgram()));
         assertEquals(ScriptType.P2WPKH, address.getOutputScriptType());
@@ -68,7 +68,7 @@ public class SegwitAddressTest {
 
         SegwitAddress address = SegwitAddress.fromBech32(MAINNET, bech32);
 
-        assertEquals(MAINNET, address.params);
+        assertEquals(MAINNET, address.getParameters());
         assertEquals("00201863143c14c5166804bd19203356da136c985678cd4d27a1b8c6329604903262",
                 ByteUtils.HEX.encode(ScriptBuilder.createOutputScript(address).getProgram()));
         assertEquals(ScriptType.P2WSH, address.getOutputScriptType());
@@ -82,7 +82,7 @@ public class SegwitAddressTest {
 
         SegwitAddress address = SegwitAddress.fromBech32(TESTNET, bech32);
 
-        assertEquals(TESTNET, address.params);
+        assertEquals(TESTNET, address.getParameters());
         assertEquals("0014751e76e8199196d454941c45d1b3a323f1433bd6",
                 ByteUtils.HEX.encode(ScriptBuilder.createOutputScript(address).getProgram()));
         assertEquals(ScriptType.P2WPKH, address.getOutputScriptType());
@@ -96,7 +96,7 @@ public class SegwitAddressTest {
 
         SegwitAddress address = SegwitAddress.fromBech32(TESTNET, bech32);
 
-        assertEquals(TESTNET, address.params);
+        assertEquals(TESTNET, address.getParameters());
         assertEquals("00201863143c14c5166804bd19203356da136c985678cd4d27a1b8c6329604903262",
                 ByteUtils.HEX.encode(ScriptBuilder.createOutputScript(address).getProgram()));
         assertEquals(ScriptType.P2WSH, address.getOutputScriptType());
@@ -109,7 +109,7 @@ public class SegwitAddressTest {
         for (AddressData valid : VALID_ADDRESSES) {
             SegwitAddress address = SegwitAddress.fromBech32(null, valid.address);
 
-            assertEquals(valid.expectedParams, address.params);
+            assertEquals(valid.expectedParams, address.getParameters());
             assertEquals(valid.expectedScriptPubKey,
                     ByteUtils.HEX.encode(ScriptBuilder.createOutputScript(address).getProgram()));
             assertEquals(valid.address.toLowerCase(Locale.ROOT), address.toBech32());
