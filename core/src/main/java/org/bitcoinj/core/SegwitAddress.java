@@ -67,7 +67,18 @@ public class SegwitAddress extends Address {
      */
     private SegwitAddress(Network network, int witnessVersion, byte[] witnessProgram)
             throws AddressFormatException {
-        this(network, encode(witnessVersion, witnessProgram));
+        this(normalizeNetwork(network), encode(witnessVersion, witnessProgram));
+    }
+
+    // SegwitAddress does not distinguish between the SIGNET and TESTNET, normalize to TESTNET
+    private static Network normalizeNetwork(Network network) {
+        if (network instanceof BitcoinNetwork) {
+            BitcoinNetwork bitcoinNetwork = (BitcoinNetwork) network;
+            if (bitcoinNetwork == BitcoinNetwork.SIGNET) {
+                return BitcoinNetwork.TESTNET;
+            }
+        }
+        return network;
     }
 
     /**

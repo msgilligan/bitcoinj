@@ -64,11 +64,22 @@ public class LegacyAddress extends Address {
      *            20-byte hash of pubkey or script
      */
     private LegacyAddress(Network network, boolean p2sh, byte[] hash160) throws AddressFormatException {
-        super(network, hash160);
+        super(normalizeNetwork(network), hash160);
         if (hash160.length != 20)
             throw new AddressFormatException.InvalidDataLength(
                     "Legacy addresses are 20 byte (160 bit) hashes, but got: " + hash160.length);
         this.p2sh = p2sh;
+    }
+
+    // LegacyAddress does not distinguish between the different testnet types, normalize to TESTNET
+    private static Network normalizeNetwork(Network network) {
+        if (network instanceof BitcoinNetwork) {
+            BitcoinNetwork bitcoinNetwork = (BitcoinNetwork) network;
+            if (bitcoinNetwork == BitcoinNetwork.SIGNET || bitcoinNetwork == BitcoinNetwork.REGTEST) {
+                return BitcoinNetwork.TESTNET;
+            }
+        }
+        return network;
     }
 
     /**
