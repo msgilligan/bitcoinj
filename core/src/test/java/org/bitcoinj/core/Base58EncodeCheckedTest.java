@@ -41,7 +41,8 @@ public class Base58EncodeCheckedTest {
         return Arrays.asList(new Object[][]{
                 {111, new byte[LegacyAddress.LENGTH], "mfWxJ45yp2SFn7UciZyNpvDKrzbhyfKrY8"},
                 {128, new byte[32], "5HpHagT65TZzG1PH3CSu63k8DbpvD8s5ip4nEB3kEsreAbuatmU"},
-                {0, HEX.decode("4a22c3c4cbb31e4d03b15550636762bda0baf85a"), "17kzeh4N8g49GFvdDzSf8PjaPfyoD1MndL"}
+                {0, HEX.decode("4a22c3c4cbb31e4d03b15550636762bda0baf85a"), "17kzeh4N8g49GFvdDzSf8PjaPfyoD1MndL"},
+                {111, HEX.decode("fda79a24e50ff70ff42f7d89585da5bd19d9e5cc"), "n4eA2nbYqErp7H6jebchxAN59DmNpksexv"}
         });
     }
 

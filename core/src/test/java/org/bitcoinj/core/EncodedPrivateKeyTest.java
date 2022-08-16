@@ -19,26 +19,11 @@ package org.bitcoinj.core;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
-import org.bitcoinj.base.Base58;
 import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.params.TestNet3Params;
 import org.junit.Test;
 
-import static org.bitcoinj.base.utils.ByteUtils.HEX;
-import static org.junit.Assert.assertEquals;
-
 public class EncodedPrivateKeyTest {
-    private static class EncodedPrivateKeyToTest extends EncodedPrivateKey {
-        public EncodedPrivateKeyToTest(NetworkParameters params, byte[] bytes) {
-            super(params, bytes);
-        }
-
-        @Override
-        public String toString() {
-            return Base58.encodeChecked(params.getAddressHeader(), bytes);
-        }
-    }
-
     @Test
     public void equalsContract() {
         EqualsVerifier.forClass(EncodedPrivateKey.class)
@@ -47,11 +32,5 @@ public class EncodedPrivateKeyTest {
                 .suppress(Warning.TRANSIENT_FIELDS)
                 .usingGetClass()
                 .verify();
-    }
-
-    @Test
-    public void stringification() {
-        EncodedPrivateKey a = new EncodedPrivateKeyToTest(TestNet3Params.get(), HEX.decode("fda79a24e50ff70ff42f7d89585da5bd19d9e5cc"));
-        assertEquals("n4eA2nbYqErp7H6jebchxAN59DmNpksexv", a.toString());
     }
 }
