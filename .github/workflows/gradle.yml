@@ -2,6 +2,11 @@ name: Java CI
 
 on: [push, pull_request]
 
+env:
+  GRADLE_ENTERPRISE_INJECTION_ENABLED: true
+  GRADLE_ENTERPRISE_URL: https://ge.gradle.org
+  GRADLE_ENTERPRISE_PLUGIN_VERSION: 3.14.1
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
