@@ -1,0 +1,97 @@
+import org.gradle.util.GradleVersion
+
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+version = '0.18-SNAPSHOT'
+
+dependencies {
+    api project(':bitcoinj-core')
+    implementation 'org.slf4j:slf4j-api:2.0.16'
+
+    testImplementation project(':bitcoinj-test-support')
+    testImplementation 'org.slf4j:slf4j-jdk14:2.0.16'
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.11.4"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:5.11.4"
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.easymock:easymock:5.5.0'
+    testImplementation 'nl.jqno.equalsverifier:equalsverifier:3.18.1'
+    testImplementation 'org.hamcrest:hamcrest-library:3.0'
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.11.4"
+    testRuntimeOnly "org.junit.vintage:junit-vintage-engine:5.11.4"
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs.addAll(['--release', '9'])
+    options.compilerArgs << '-Xlint:deprecation'
+    options.encoding = 'UTF-8'
+}
+
+javadoc.options.encoding = 'UTF-8'
+// Uncomment the following line to see all the JavaDoc warnings
+//javadoc.options.addStringOption('Xmaxwarns', '10000')
+
+tasks.withType(Test) {
+    testLogging {
+        events "failed"
+        exceptionFormat "full"
+    }
+}
+
+// Test with default Java toolchain
+test {
+    doFirst {
+        logger.lifecycle("Testing with default toolchain")
+    }
+}
+
+ext.moduleName = 'org.bitcoinj.async'
+
+jar {
+    inputs.property("moduleName", moduleName)
+    manifest {
+        attributes 'Automatic-Module-Name': moduleName
+    }
+}
+
+def minGradleArchiveClassifierVersion = GradleVersion.version("5.0")
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    if (GradleVersion.current() > minGradleArchiveClassifierVersion) {
+        archiveClassifier.set('javadoc')
+    } else {
+        classifier = 'javadoc'
+    }
+    from javadoc.destinationDir
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    if (GradleVersion.current() > minGradleArchiveClassifierVersion) {
+        archiveClassifier.set('sources')
+    } else {
+        classifier = 'sources'
+    }
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'bitcoinj-async'
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+
+            pom {
+                description = 'bitcoinj asynchronous support'
+            }
+        }
+    }
+}

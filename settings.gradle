@@ -26,6 +26,9 @@ project(':base').name = 'bitcoinj-base'
 include 'core'
 project(':core').name = 'bitcoinj-core'
 
+include 'async'
+project(':async').name = 'bitcoinj-async'
+
 include 'tools'
 project(':tools').name = 'bitcoinj-tools'
 
