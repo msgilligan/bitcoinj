@@ -16,4 +16,7 @@
 /**
  * This package is for internal ({@code bitcoinj-core}) use only.
  */
+@NullMarked
 package org.bitcoinj.crypto.internal;
+
+import org.jspecify.annotations.NullMarked;
