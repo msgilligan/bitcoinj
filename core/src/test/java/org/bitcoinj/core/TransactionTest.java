@@ -217,7 +217,6 @@ public class TransactionTest {
         Address fromAddress = fromKey.toAddress(ScriptType.P2PKH, BitcoinNetwork.TESTNET);
         Transaction tx = new Transaction();
         TransactionOutPoint outPoint = TransactionOutPoint.of(utxo_id, 0);
-        TransactionOutput output = new TransactionOutput(null, inAmount, fromAddress);
         tx.addOutput(outAmount, toAddr);
         TransactionInput input = tx.addSignedInput(outPoint, ScriptBuilder.createOutputScript(fromAddress), inAmount, fromKey);
 
