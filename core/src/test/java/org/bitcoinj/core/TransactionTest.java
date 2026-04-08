@@ -47,6 +47,7 @@ import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
@@ -221,7 +222,8 @@ public class TransactionTest {
         TransactionInput input = tx.addSignedInput(outPoint, ScriptBuilder.createOutputScript(fromAddress), inAmount, fromKey);
 
         // verify signature
-        ScriptExecution.correctlySpends(input.getScriptSig(), tx, 0, null, null, ScriptBuilder.createOutputScript(fromAddress), null);
+        ScriptExecution.correctlySpends(input.getScriptSig(), tx, 0, null, null,
+                ScriptBuilder.createOutputScript(fromAddress), Collections.emptySet());
 
         byte[] rawTx = tx.serialize();
 
@@ -244,7 +246,7 @@ public class TransactionTest {
 
         // verify signature
         ScriptExecution.correctlySpends(input.getScriptSig(), tx, 0, input.getWitness(), input.getValue(),
-                ScriptBuilder.createOutputScript(fromAddress), null);
+                ScriptBuilder.createOutputScript(fromAddress), Collections.emptySet());
 
         byte[] rawTx = tx.serialize();
 
