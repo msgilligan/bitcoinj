@@ -1019,6 +1019,7 @@ public class ScriptExecution {
     public static void correctlySpends(Script script, Transaction txContainingThis, int scriptSigIndex,
                                        @Nullable TransactionWitness witness, @Nullable Coin value,
                                        Script scriptPubKey, Set<VerifyFlag> verifyFlags) throws ScriptException {
+        Objects.requireNonNull(verifyFlags);
         List<ScriptChunk> chunks = script.chunks();
         if (ScriptPattern.isP2WPKH(scriptPubKey)) {
             Objects.requireNonNull(witness);
@@ -1089,6 +1090,7 @@ public class ScriptExecution {
     @Deprecated
     public static void correctlySpends(Script script, Transaction txContainingThis, long scriptSigIndex,
                                        Script scriptPubKey, Set<VerifyFlag> verifyFlags) throws ScriptException {
+        Objects.requireNonNull(verifyFlags);
         // Clone the transaction because executing the script involves editing it, and if we die, we'll leave
         // the tx half broken (also it's not so thread safe to work on it directly.
         try {
