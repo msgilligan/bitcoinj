@@ -16,6 +16,7 @@
 
 package org.bitcoinj.store;
 
+import org.bitcoinj.base.Network;
 import org.bitcoinj.core.Block;
 import org.bitcoinj.base.Sha256Hash;
 import org.bitcoinj.core.StoredBlock;
@@ -46,6 +47,11 @@ public class MemoryBlockStore implements BlockStore {
         } catch (BlockStoreException | VerificationException e) {
             throw new RuntimeException(e);  // Cannot happen.
         }
+    }
+
+    @Override
+    public Network network() {
+        throw new UnsupportedOperationException();
     }
 
     @Override

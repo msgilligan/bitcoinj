@@ -67,7 +67,7 @@ public class TxConfidenceTable {
      * usage).
      * @param size Max number of transactions to track. The table will fill up to this size then stop growing.
      */
-    public TxConfidenceTable(final int size) {
+    TxConfidenceTable(final int size) {
         this(size, TransactionConfidence::new);
     }
 
@@ -88,7 +88,7 @@ public class TxConfidenceTable {
      * Creates a table that will track at most {@link TxConfidenceTable#MAX_SIZE} entries. You should normally use
      * this constructor.
      */
-    public TxConfidenceTable() {
+    TxConfidenceTable() {
         this(MAX_SIZE);
     }
 

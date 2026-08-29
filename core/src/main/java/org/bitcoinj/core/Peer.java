@@ -747,7 +747,7 @@ public class Peer extends PeerSocketHandler {
             // we can stop holding a reference to the confidence object ourselves. It's up to event listeners on the
             // Peer to stash the tx object somewhere if they want to keep receiving updates about network propagation
             // and so on.
-            TransactionConfidence confidence = tx.getConfidence();
+            TransactionConfidence confidence = tx.getConfidence(params.network());
             confidence.maybeSetSourceToNetwork();
             pendingTxDownloads.remove(confidence);
             if (maybeHandleRequestedData(tx, tx.getTxId())) {
@@ -839,7 +839,7 @@ public class Peer extends PeerSocketHandler {
      * @return A Future for a list of dependent transactions
      */
     public CompletableFuture<List<Transaction>> downloadDependencies(Transaction tx) {
-        TransactionConfidence.ConfidenceType txConfidence = tx.getConfidence().getConfidenceType();
+        TransactionConfidence.ConfidenceType txConfidence = tx.getConfidence(params.network()).getConfidenceType();
         checkArgument(txConfidence != TransactionConfidence.ConfidenceType.BUILDING);
         log.info("{}: Downloading dependencies of {}", getAddress(), tx.getTxId());
         // future will be invoked when the entire dependency tree has been walked and the results compiled.
@@ -961,7 +961,7 @@ public class Peer extends PeerSocketHandler {
             log.debug("{}: Received broadcast block {}", getAddress(), m.getHashAsString());
         if (!m.isHeaderOnly()) {
             m.forEachTransaction(tx ->
-                tx.getConfidence().maybeSetSourceToNetwork()
+                tx.getConfidence(params.network()).maybeSetSourceToNetwork()
             );
         }
         // Was this block requested by getBlock()?

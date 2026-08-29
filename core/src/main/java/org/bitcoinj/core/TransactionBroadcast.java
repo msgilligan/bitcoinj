@@ -17,6 +17,7 @@
 package org.bitcoinj.core;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.bitcoinj.base.Network;
 import org.bitcoinj.base.internal.FutureUtils;
 import org.bitcoinj.base.internal.StreamUtils;
 import org.bitcoinj.base.internal.InternalUtils;
@@ -55,6 +56,7 @@ public class TransactionBroadcast implements Wallet.SendResult {
 
     // This future completes when we have verified that more than numWaitingFor Peers have seen the broadcast
     private final CompletableFuture<TransactionBroadcast> seenFuture = new CompletableFuture<>();
+    private final Network network;
     @Nullable private final PeerGroup peerGroup;
     private final Transaction tx;
     private final int minConnections;
@@ -67,6 +69,7 @@ public class TransactionBroadcast implements Wallet.SendResult {
 
     TransactionBroadcast(@NonNull PeerGroup peerGroup, Transaction tx, int minConnections, boolean dropPeersAfterBroadcast) {
         this.peerGroup = peerGroup;
+        this.network = peerGroup.params.network();
         this.tx = tx;
         this.minConnections = minConnections;
         this.dropPeersAfterBroadcast = dropPeersAfterBroadcast;
@@ -77,7 +80,8 @@ public class TransactionBroadcast implements Wallet.SendResult {
     }
 
     // Only for mock broadcasts.
-    private TransactionBroadcast(Transaction tx) {
+    private TransactionBroadcast(Network network, Transaction tx) {
+        this.network = network;
         this.peerGroup = null;
         this.tx = tx;
         this.minConnections = 0;
@@ -97,8 +101,8 @@ public class TransactionBroadcast implements Wallet.SendResult {
     }
 
     @VisibleForTesting
-    public static TransactionBroadcast createMockBroadcast(Transaction tx, final CompletableFuture<Transaction> future) {
-        return new TransactionBroadcast(tx) {
+    public static TransactionBroadcast createMockBroadcast(Network network, Transaction tx, final CompletableFuture<Transaction> future) {
+        return new TransactionBroadcast(network, tx) {
             @Override
             public CompletableFuture<TransactionBroadcast> broadcastOnly() {
                 // broadcast is not supported for MockBroadcast (peerGroup is null)
@@ -164,7 +168,7 @@ public class TransactionBroadcast implements Wallet.SendResult {
             // a big effect.
             List<Peer> peers = peerGroup.getConnectedPeers();    // snapshots
             // Prepare to send the transaction by adding a listener that'll be called when confidence changes.
-            tx.getConfidence().addEventListener(new ConfidenceChange());
+            tx.getConfidence(network).addEventListener(new ConfidenceChange());
             // Bitcoin Core sends an inv in this case and then lets the peer request the tx data. We just
             // blast out the TX here for a couple of reasons. Firstly it's simpler: in the case where we have
             // just a single connection we don't have to wait for getdata to be received and handled before

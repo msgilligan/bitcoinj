@@ -258,7 +258,7 @@ public class PeerGroup implements TransactionBroadcaster {
             Script scriptPubKey = output.getScriptPubKey();
             if (ScriptPattern.isP2PK(scriptPubKey) || ScriptPattern.isP2WPKH(scriptPubKey)) {
                 if (wallet.isMine(output)) {
-                    if (tx.getConfidence().getConfidenceType() == TransactionConfidence.ConfidenceType.BUILDING)
+                    if (tx.getConfidence(params.network()).getConfidenceType() == TransactionConfidence.ConfidenceType.BUILDING)
                         recalculateFastCatchupAndFilter(FilterRecalculateMode.SEND_IF_CHANGED);
                     else
                         recalculateFastCatchupAndFilter(FilterRecalculateMode.DONT_SEND);
@@ -2204,11 +2204,11 @@ public class PeerGroup implements TransactionBroadcaster {
                                                      final boolean dropPeersAfterBroadcast) {
         // If we don't have a record of where this tx came from already, set it to be ourselves so Peer doesn't end up
         // redownloading it from the network redundantly.
-        if (tx.getConfidence().getSource().equals(TransactionConfidence.Source.UNKNOWN)) {
+        if (tx.getConfidence(params.network()).getSource().equals(TransactionConfidence.Source.UNKNOWN)) {
             log.info("Transaction source unknown, setting to SELF: {}", tx.getTxId());
-            tx.getConfidence().setSource(TransactionConfidence.Source.SELF);
+            tx.getConfidence(params.network()).setSource(TransactionConfidence.Source.SELF);
         }
-        boolean dropPeersAfterBroadcastArg = dropPeersAfterBroadcast && tx.getConfidence().numBroadcastPeers() == 0;
+        boolean dropPeersAfterBroadcastArg = dropPeersAfterBroadcast && tx.getConfidence(params.network()).numBroadcastPeers() == 0;
         final TransactionBroadcast broadcast = new TransactionBroadcast(this, tx, minConnections, dropPeersAfterBroadcastArg);
         // Send the TX to the wallet once we have a successful broadcast.
         broadcast.awaitRelayed().whenComplete((bcast, throwable) -> {

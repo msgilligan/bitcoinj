@@ -384,10 +384,16 @@ public class TransactionOutput {
      * <p>If the transaction appears in the top block, the depth is one. If it's anything else (pending, dead, unknown)
      * then -1.</p>
      * @return The tx depth or -1.
+     * @deprecated Use {@link TransactionOutput#getParentTransactionDepthInBlocks(Network)}
      */
+    @Deprecated
     public int getParentTransactionDepthInBlocks() {
+        return -1;
+    }
+
+    public int getParentTransactionDepthInBlocks(Network network) {
         if (getParentTransaction() != null) {
-            TransactionConfidence confidence = getParentTransaction().getConfidence();
+            TransactionConfidence confidence = getParentTransaction().getConfidence(network);
             if (confidence.getConfidenceType() == TransactionConfidence.ConfidenceType.BUILDING) {
                 return confidence.getDepthInBlocks();
             }

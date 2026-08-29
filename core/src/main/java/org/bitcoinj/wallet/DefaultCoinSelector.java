@@ -72,6 +72,18 @@ public class DefaultCoinSelector implements CoinSelector {
         return new CoinSelection(selected);
     }
 
+    private void sortByDepth(ArrayList<TransactionOutput> outputs) {
+        outputs.sort(DefaultCoinSelector::compareByDepth);
+    }
+
+    public static class Comparator<TransactionOutput> implements java.util.Comparator<TransactionOutput> {
+
+        @Override
+        public int compare(TransactionOutput o1, TransactionOutput o2) {
+            return 0;
+        }
+    }
+
     /**
      * Comparator for sorting {@link TransactionOutput} by coin depth, value, and then hash.
      * @param a The first object to be compared

@@ -84,7 +84,7 @@ public class MockTransactionBroadcaster implements TransactionBroadcaster {
                     }
                 }
             });
-            return TransactionBroadcast.createMockBroadcast(tx, result);
+            return TransactionBroadcast.createMockBroadcast(wallet.network(), tx, result);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {

@@ -16,6 +16,7 @@
 
 package org.bitcoinj.store;
 
+import org.bitcoinj.base.Network;
 import org.bitcoinj.core.BlockChain;
 import org.bitcoinj.base.Sha256Hash;
 import org.bitcoinj.core.StoredBlock;
@@ -32,6 +33,8 @@ import org.jspecify.annotations.Nullable;
  * BlockStores are thread safe.
  */
 public interface BlockStore extends AutoCloseable {
+    Network network();
+    
     /**
      * Saves the given block header+extra data. The key isn't specified explicitly as it can be calculated from the
      * StoredBlock directly. Can throw if there is a problem with the underlying storage layer such as running out of

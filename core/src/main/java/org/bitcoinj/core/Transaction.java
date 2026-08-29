@@ -464,6 +464,7 @@ public class Transaction implements Message {
      * Convenience wrapper around getConfidence().getConfidenceType()
      * @return true if this transaction hasn't been seen in any block yet.
      */
+    @Deprecated
     public boolean isPending() {
         return getConfidence().getConfidenceType() == TransactionConfidence.ConfidenceType.PENDING;
     }
@@ -1601,8 +1602,17 @@ public class Transaction implements Message {
     /**
      * Returns the confidence object for this transaction from the {@link TxConfidenceTable}
      * referenced by the implicit {@link Context}.
+     * @deprecated Use {@link Transaction#getConfidence(Network)}
      */
     public TransactionConfidence getConfidence() {
+        return getConfidence(Context.get().getConfidenceTable());
+    }
+
+    /**
+     * Returns the confidence object for this transaction from the {@link TxConfidenceTable}
+     * referenced by the implicit {@link Context}.
+     */
+    public TransactionConfidence getConfidence(Network network) {
         return getConfidence(Context.get().getConfidenceTable());
     }
 

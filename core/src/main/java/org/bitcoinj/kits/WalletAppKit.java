@@ -198,7 +198,8 @@ public class WalletAppKit extends AbstractIdleService implements Closeable {
         kit.startAsync();               // Connect to the network and start downloading transactions
         kit.awaitRunning();             // Wait for the service to reach the RUNNING state
         if (maxConnections > 0) {
-            kit.peerGroup().setMaxConnections(maxConnections);
+            PeerGroup peerGroup = Objects.requireNonNull(kit.vPeerGroup);
+            peerGroup.setMaxConnections(maxConnections);
         }
         return kit;
     }
@@ -524,7 +525,7 @@ public class WalletAppKit extends AbstractIdleService implements Closeable {
         }
     }
 
-    protected PeerGroup createPeerGroup() {
+    private PeerGroup createPeerGroup() {
         return new PeerGroup(network, vChain);
     }
 

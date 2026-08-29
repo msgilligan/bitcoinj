@@ -16,6 +16,7 @@
 
 package org.bitcoinj.store;
 
+import org.bitcoinj.base.Network;
 import org.bitcoinj.base.internal.ByteUtils;
 import org.bitcoinj.core.Block;
 import org.bitcoinj.core.NetworkParameters;
@@ -259,6 +260,11 @@ public class SPVBlockStore implements BlockStore {
     /** Returns the size in bytes of the file that is used to store the chain with the current parameters. */
     public static int getFileSize(int capacity) {
         return RECORD_SIZE_V2 * capacity + FILE_PROLOGUE_BYTES /* extra kilobyte for stuff */;
+    }
+
+    @Override
+    public Network network() {
+        return params.network();
     }
 
     @Override
